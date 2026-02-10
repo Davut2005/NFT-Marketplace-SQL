@@ -1,5 +1,16 @@
 
 
+DROP VIEW IF EXISTS vw_collection_stats;
+DROP VIEW IF EXISTS vw_user_listings;
+
+DROP TABLE IF EXISTS activity_logs;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS sales;
+DROP TABLE IF EXISTS listings;
+DROP TABLE IF EXISTS ownership_history;
+DROP TABLE IF EXISTS nfts;
+DROP TABLE IF EXISTS collections;
+DROP TABLE IF EXISTS users;
 
 
 
@@ -80,7 +91,6 @@ CREATE TABLE activity_logs (
     entity_id INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 
 
 
@@ -187,3 +197,33 @@ INSERT INTO activity_logs (user_id, action, entity_type, entity_id) VALUES
 (5, 'listed', 'listing', 2),
 (6, 'listed', 'listing', 3),
 (7, 'purchased', 'nft', 3);
+
+
+
+CREATE OR REPLACE VIEW vw_user_listings AS
+SELECT
+    l.id AS listing_id,
+    l.seller_id,
+    l.price,
+    l.status,
+    l.listed_at,
+    n.id AS nft_id,
+    n.name AS nft_name,
+    n.collection_id
+FROM listings l
+JOIN nfts n ON l.nft_id = n.id
+WHERE l.status = 'active';
+
+CREATE OR REPLACE VIEW vw_collection_stats AS
+SELECT
+    c.id AS collection_id,
+    c.name AS collection_name,
+    COUNT(DISTINCT n.id) AS total_nfts,
+    COUNT(DISTINCT l.id) AS active_listings_count,
+    COALESCE(AVG(l.price), 0) AS avg_listing_price,
+    COALESCE(SUM(s.sale_price), 0) AS total_sales_volume
+FROM collections c
+LEFT JOIN nfts n ON c.id = n.collection_id
+LEFT JOIN listings l ON n.id = l.nft_id AND l.status = 'active'
+LEFT JOIN sales s ON l.id = s.listing_id
+GROUP BY c.id, c.name;
