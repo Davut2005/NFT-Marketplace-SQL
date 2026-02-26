@@ -9,8 +9,8 @@ CREATE TABLE users (
 
 CREATE TABLE collections (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
+    name VARCHAR(50) NOT NULL,
+    description VARCHAR(100),
     creator_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -19,8 +19,8 @@ CREATE TABLE collections (
 CREATE TABLE nfts (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    description TEXT,
-    image_url TEXT,
+    description VARCHAR(100),
+    image_url VARCHAR(100),
     collection_id INTEGER REFERENCES collections(id) ON DELETE SET NULL,
     creator_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     royalty_percentage DECIMAL(5, 2) DEFAULT 0.00
@@ -37,7 +37,7 @@ CREATE TABLE ownership_history (
 );
 
 
-CREATE TABLE listings (
+CREATE TABLE listing_posts (
     id SERIAL PRIMARY KEY,
     nft_id INTEGER REFERENCES nfts(id) ON DELETE CASCADE,
     seller_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -49,7 +49,7 @@ CREATE TABLE listings (
 
 CREATE TABLE sales (
     id SERIAL PRIMARY KEY,
-    listing_id INTEGER REFERENCES listings(id) ON DELETE CASCADE,
+    listing_id INTEGER REFERENCES listing_posts(id) ON DELETE CASCADE,
     buyer_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     sale_price DECIMAL(18, 2) NOT NULL,
     royalty_paid DECIMAL(18, 2) DEFAULT 0.00,
